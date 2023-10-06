@@ -1,0 +1,93 @@
+
+Serial_BubbleSort
+
+
+procedure bubbleSort(arr: array of integers)
+    n = length(arr)
+    for i from 0 to n - 1
+        for j from 0 to n - i - 1
+            if arr[j] > arr[j + 1]
+                swap arr[j] and arr[j + 1]
+            end if
+        end for
+    end for
+end procedure
+
+------------------------------------------------------------------------------------------
+parallel_BubbleSort
+
+procedure parallelBubbleSort(arr: array of integers)
+    n = length(arr)
+    for i from 0 to n - 1
+        swapped = false
+        #pragma omp parallel shared(arr, n, swapped)
+        {
+            localSwapped = false
+            #pragma omp for
+            for j from 0 to n - i - 1
+                if arr[j] > arr[j + 1]
+                    swap arr[j] and arr[j + 1]
+                    localSwapped = true
+                end if
+            end for
+            #pragma omp critical
+            {
+                if localSwapped
+                    swapped = true
+                end if
+            }
+        }
+        if not swapped
+            break // If no swaps occurred, the array is already sorted.
+        end if
+    end for
+end procedure
+
+------------------------------------------------------------------------------------
+
+Serial_Fibonacci
+
+
+function fibonacci(n)
+    if n <= 0
+        return 0
+    end if
+    if n == 1
+        return 1
+    end if
+    return fibonacci(n - 1) + fibonacci(n - 2)
+end function
+
+procedure main()
+    n = 10
+    result = fibonacci(n)
+    print "Fibonacci(", n, ") =", result
+end procedure
+
+----------------------------------------------------------------------------------------
+
+parallel_Fibonacci
+
+function parallelFibonacci(n)
+    if n <= 0
+        return 0
+    end if
+    if n == 1
+        return 1
+    end if
+    declare fib_n_minus_1, fib_n_minus_2
+    parallel sections
+        section
+            fib_n_minus_1 = parallelFibonacci(n - 1)
+        section
+            fib_n_minus_2 = parallelFibonacci(n - 2)
+    end parallel sections
+    return fib_n_minus_1 + fib_n_minus_2
+end function
+
+procedure main()
+    n = 10
+    result = parallelFibonacci(n)
+    print "Fibonacci(", n, ") =", result
+end procedure
+
